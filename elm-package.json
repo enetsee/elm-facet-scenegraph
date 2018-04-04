@@ -1,5 +1,5 @@
 {
-    "version": "1.0.0",
+    "version": "1.0.1",
     "summary": "A data structure to represent a set of visual marks.",
     "repository": "https://github.com/enetsee/elm-facet-scenegraph.git",
     "license": "MIT",
@@ -20,6 +20,7 @@
         "Facet.Scenegraph.Mark.Trail",
         "Facet.Scenegraph.Cursor",
         "Facet.Scenegraph.Fill",
+        "Facet.Scenegraph.Font",
         "Facet.Scenegraph.Interpolate",
         "Facet.Scenegraph.Position",
         "Facet.Scenegraph.Shape",
@@ -27,7 +28,7 @@
         "Facet.Scenegraph.SVG.Command",
         "Facet.Scenegraph.SVG.Path",
         "Facet.Scenegraph.SVG.Point"
-      ],
+    ],
     "dependencies": {
         "elm-lang/core": "5.1.1 <= v < 6.0.0",
         "elm-lang/html": "2.0.0 <= v < 3.0.0"
