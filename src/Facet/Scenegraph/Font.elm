@@ -2,6 +2,7 @@ module Facet.Scenegraph.Font exposing (Font, default, FontStyle(..), FontWeight(
 
 {-|
 @docs Font,  FontWeight, FontStyle
+@docs default
 @docs fontStyleToString, fontWeightToString
 -}
 
@@ -28,6 +29,7 @@ type FontStyle
     | StyleItalic
 
 
+{-| -}
 default : Font
 default =
     Font "Helvetica" 12 WeightNormal StyleNormal
