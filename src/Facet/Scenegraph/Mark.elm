@@ -32,6 +32,14 @@ module Facet.Scenegraph.Mark
         , align
         , baseline
         , direction
+        , font
+        , fontName
+        , fontWeight
+        , fontWeightBold
+        , fontWeightNormal
+        , fontStyle
+        , fontStyleItalic
+        , fontStyleNormal
         , Trail
         , trail
         , FilledMark
@@ -95,7 +103,7 @@ module Facet.Scenegraph.Mark
 @docs Symbol, symbol, shape
 
 ##Text
-@docs Text, Direction, Align, Baseline, text, relativePosition, align, baseline, direction
+@docs Text, Direction, Align, Baseline, text, relativePosition, align, baseline, direction, font , fontName , fontWeight, fontWeightBold, fontWeightNormal, fontStyle, fontStyleItalic, fontStyleNormal
 
 ##Trail
 @docs Trail , trail
@@ -507,6 +515,88 @@ baseline baseline text =
 direction : Direction -> Text -> Text
 direction direction text =
     { text | direction = direction }
+
+
+{-| -}
+font : Font -> Text -> Text
+font font text =
+    { text | font = font }
+
+
+{-| -}
+fontName : String -> Text -> Text
+fontName name mark =
+    let
+        currentFont =
+            mark.font
+
+        newFont =
+            { currentFont | font = name }
+    in
+        font newFont mark
+
+
+{-| -}
+fontSize : Float -> Text -> Text
+fontSize size mark =
+    let
+        currentFont =
+            mark.font
+
+        newFont =
+            { currentFont | fontSize = size }
+    in
+        font newFont mark
+
+
+{-| -}
+fontWeight : Font.FontWeight -> Text -> Text
+fontWeight weight mark =
+    let
+        currentFont =
+            mark.font
+
+        newFont =
+            { currentFont | fontWeight = weight }
+    in
+        font newFont mark
+
+
+{-| -}
+fontWeightBold : Text -> Text
+fontWeightBold =
+    fontWeight Font.WeightBold
+
+
+{-| -}
+fontWeightNormal : Text -> Text
+fontWeightNormal =
+    fontWeight Font.WeightNormal
+
+
+{-| -}
+fontStyle : Font.FontStyle -> Text -> Text
+fontStyle style mark =
+    let
+        currentFont =
+            mark.font
+
+        newFont =
+            { currentFont | fontStyle = style }
+    in
+        font newFont mark
+
+
+{-| -}
+fontStyleItalic : Text -> Text
+fontStyleItalic =
+    fontStyle Font.StyleItalic
+
+
+{-| -}
+fontStyleNormal : Text -> Text
+fontStyleNormal =
+    fontStyle Font.StyleNormal
 
 
 
