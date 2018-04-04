@@ -14,7 +14,8 @@ type alias Fill =
     }
 
 
-{-| -}
+{-| The empty fill
+-}
 empty : Fill
 empty =
     Fill Nothing Nothing

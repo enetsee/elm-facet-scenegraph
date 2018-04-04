@@ -1,7 +1,7 @@
 module Facet.Scenegraph.Mark.Text exposing (Text, Direction(..), Baseline(..), Align(..))
 
 {-|
-@docs Text,text, Direction, Baseline, HAlign
+@docs Text, Direction, Baseline, Align
 -}
 
 import Facet.Scenegraph.Cursor exposing (Cursor(CursorDefault))

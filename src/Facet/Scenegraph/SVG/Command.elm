@@ -1,7 +1,7 @@
 module Facet.Scenegraph.SVG.Command exposing (Command(..), toString)
 
 {-|
-#docs Command, toString
+@docs Command, toString
 -}
 
 import Facet.Scenegraph.SVG.Point exposing (Point)

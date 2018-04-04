@@ -31,18 +31,22 @@ type alias Stroke =
     }
 
 
+{-| -}
 type StrokeCap
     = CapButt
     | CapRound
     | CapSquare
 
 
+{-| -}
 type StrokeJoin
     = JoinMiter
     | JoinRound
     | JoinBevel
 
 
+{-| The empty stroke
+-}
 empty : Stroke
 empty =
     { stroke = Nothing

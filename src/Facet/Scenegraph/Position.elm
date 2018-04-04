@@ -2,6 +2,7 @@ module Facet.Scenegraph.Position exposing (map, Position(..), PositionOrExtent(.
 
 {-|
 @docs Position, PositionOrExtent
+@docs map
 -}
 
 
@@ -16,6 +17,7 @@ type Position
     | CenterExtent Float Float
 
 
+{-| -}
 map : (Float -> Float) -> Position -> Position
 map f position =
     case position of
