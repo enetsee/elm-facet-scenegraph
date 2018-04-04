@@ -32,6 +32,8 @@ module Facet.Scenegraph.Mark
         , align
         , baseline
         , direction
+        , Trail
+        , trail
         , FilledMark
         , fill
         , fillColor
@@ -94,6 +96,9 @@ module Facet.Scenegraph.Mark
 
 ##Text
 @docs Text, Direction, Align, Baseline, text, relativePosition, align, baseline, direction
+
+##Trail
+@docs Trail , trail
 
 ##Fill
 @docs FilledMark, fill, fillColor, fillOpacity
@@ -522,6 +527,7 @@ type alias Trail =
     }
 
 
+{-| -}
 trail : List Float -> List Float -> List Float -> Trail
 trail xs ys widths =
     Trail xs ys widths Fill.empty CursorDefault Nothing Nothing 0
