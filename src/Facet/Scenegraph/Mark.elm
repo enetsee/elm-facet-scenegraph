@@ -8,7 +8,9 @@ module Facet.Scenegraph.Mark
         , innerRadius
         , outerRadius
         , Area
-        , area
+        , Orientation(..)
+        , hArea
+        , vArea
         , Group
         , group
         , clip
@@ -65,7 +67,9 @@ module Facet.Scenegraph.Mark
         , angle
         , cornerRadius
         , LineLike
+        , Behaviour(..)
         , interpolate
+        , behaviour
         , Mark
         , href
         , tooltip
@@ -79,7 +83,7 @@ module Facet.Scenegraph.Mark
 @docs  Arc, arc, startAngle , endAngle , padAngle , innerRadius , outerRadius
 
 ## Area
-@docs Area, area
+@docs Area,Orientation, hArea, vArea
 
 ## Group
 @docs Group, group, clip
@@ -88,7 +92,7 @@ module Facet.Scenegraph.Mark
 @docs Line, line
 
 ##Line-like
-@docs LineLike, interpolate
+@docs Behaviour, LineLike, interpolate, behaviour
 
 ##Path
 @docs Path, path
@@ -126,12 +130,13 @@ import Facet.Scenegraph.Cursor exposing (Cursor(CursorDefault))
 import Facet.Scenegraph.Fill as Fill exposing (Fill)
 import Facet.Scenegraph.Font as Font exposing (Font)
 import Facet.Scenegraph.Interpolate exposing (Interpolate)
-import Facet.Scenegraph.Position exposing (Position(..), PositionOrExtent(Position, Extent))
+import Facet.Scenegraph.Position exposing (Position(..))
 import Facet.Scenegraph.Shape as Shape exposing (Shape)
 import Facet.Scenegraph.Stroke as Stroke exposing (Stroke)
-import Facet.Scenegraph.SVG.Path as SVG
+import Path.LowLevel exposing (SubPath)
 
 
+-- import Facet.Scenegraph.SVG.Path as SVG
 -- Arcs ------------------------------------------------------------------------
 
 
@@ -144,8 +149,8 @@ type alias Arc =
     , innerRadius : Float
     , outerRadius : Float
     , cornerRadius : Float
-    , x : Position
-    , y : Position
+    , x : Float
+    , y : Float
     , fill : Fill
     , stroke : Stroke
     , cursor : Cursor
@@ -158,7 +163,7 @@ type alias Arc =
 {-| -}
 arc : Float -> Float -> Float -> Float -> Arc
 arc x y startAngle endAngle =
-    Arc startAngle endAngle 0 0 0 0 (Primary x) (Primary y) Fill.empty Stroke.empty CursorDefault Nothing Nothing 0
+    Arc startAngle endAngle 0 0 0 0 x y Fill.empty Stroke.empty CursorDefault Nothing Nothing 0
 
 
 {-| -}
@@ -195,12 +200,27 @@ outerRadius radius arc =
 -- Area ------------------------------------------------------------------------
 
 
-{-| Filled area with horizontal alignment
+{-| What to when a point is not defined
+-}
+type Behaviour
+    = SkipMissing
+    | Split
+
+
+{-| -}
+type Orientation
+    = Vertical
+    | Horizontal
+
+
+{-| Filled area with either vertical or horizontal orientation
 -}
 type alias Area =
-    { x : List Float
-    , y : List Position
+    { x : List (Maybe Float)
+    , y : List (Maybe Position)
     , interpolate : Interpolate
+    , behaviour : Behaviour
+    , alignment : Orientation
     , fill : Fill
     , stroke : Stroke
     , cursor : Cursor
@@ -211,11 +231,29 @@ type alias Area =
 
 
 {-| -}
-area : List Float -> List Float -> List Float -> Interpolate -> Area
-area xs ys ys2 interpolate =
-    Area xs
-        (List.map2 (\y y2 -> PrimarySecondary y (Position y2)) ys ys2)
+hArea : List Float -> List Float -> List Float -> Interpolate -> Behaviour -> Area
+hArea xs ys ys2 interpolate behaviour =
+    Area (List.map Just xs)
+        (List.map2 (\x x2 -> PrimarySecondary x x2 |> Just) ys ys2)
         interpolate
+        behaviour
+        Horizontal
+        Fill.empty
+        Stroke.empty
+        CursorDefault
+        Nothing
+        Nothing
+        0
+
+
+{-| -}
+vArea : List Float -> List Float -> List Float -> Interpolate -> Behaviour -> Area
+vArea xs ys ys2 interpolate behaviour =
+    Area (List.map Just xs)
+        (List.map2 (\x x2 -> PrimarySecondary x x2 |> Just) ys ys2)
+        interpolate
+        behaviour
+        Vertical
         Fill.empty
         Stroke.empty
         CursorDefault
@@ -233,8 +271,8 @@ area xs ys ys2 interpolate =
 type alias Group =
     { clip : Bool
     , cornerRadius : Float
-    , x : Position
-    , y : Position
+    , x : Float
+    , y : Float
     , fill : Fill
     , stroke : Stroke
     , cursor : Cursor
@@ -247,7 +285,7 @@ type alias Group =
 {-| -}
 group : Float -> Float -> Bool -> Group
 group x y clip =
-    Group clip 0 (Primary x) (Primary y) Fill.empty Stroke.empty CursorDefault Nothing Nothing 0
+    Group clip 0 x y Fill.empty Stroke.empty CursorDefault Nothing Nothing 0
 
 
 {-| -}
@@ -263,9 +301,10 @@ clip clip group =
 {-| Stroked lines
 -}
 type alias Line =
-    { x : List Float
-    , y : List Float
+    { x : List (Maybe Float)
+    , y : List (Maybe Float)
     , interpolate : Interpolate
+    , behaviour : Behaviour
     , stroke : Stroke
     , cursor : Cursor
     , href : Maybe String
@@ -275,9 +314,18 @@ type alias Line =
 
 
 {-| -}
-line : List Float -> List Float -> Interpolate -> Line
-line xs ys interpolate =
-    Line xs ys interpolate Stroke.empty CursorDefault Nothing Nothing 0
+line : List Float -> List Float -> Interpolate -> Behaviour -> Line
+line xs ys interpolate behaviour =
+    Line
+        (List.map Just xs)
+        (List.map Just ys)
+        interpolate
+        behaviour
+        Stroke.empty
+        CursorDefault
+        Nothing
+        Nothing
+        0
 
 
 
@@ -286,13 +334,19 @@ line xs ys interpolate =
 
 {-| -}
 type alias LineLike a =
-    { a | interpolate : Interpolate }
+    { a | interpolate : Interpolate, behaviour : Behaviour }
 
 
 {-| -}
 interpolate : Interpolate -> LineLike a -> LineLike a
 interpolate method mark =
     { mark | interpolate = method }
+
+
+{-| -}
+behaviour : Behaviour -> LineLike a -> LineLike a
+behaviour behaviour mark =
+    { mark | behaviour = behaviour }
 
 
 
@@ -302,9 +356,9 @@ interpolate method mark =
 {-| Arbitrary paths or polygons, defined using SVG path syntax
 -}
 type alias Path =
-    { path : SVG.Path
-    , x : Position
-    , y : Position
+    { path : SubPath
+    , x : Float
+    , y : Float
     , fill : Fill
     , stroke : Stroke
     , cursor : Cursor
@@ -315,9 +369,9 @@ type alias Path =
 
 
 {-| -}
-path : Float -> Float -> SVG.Path -> Path
+path : Float -> Float -> SubPath -> Path
 path x y path =
-    Path path (Primary x) (Primary y) Fill.empty Stroke.empty CursorDefault Nothing Nothing 0
+    Path path x y Fill.empty Stroke.empty CursorDefault Nothing Nothing 0
 
 
 
@@ -343,8 +397,8 @@ type alias Rect =
 rect : Float -> Float -> Float -> Float -> Rect
 rect x x2 y y2 =
     Rect 0
-        (PrimarySecondary x (Position x2))
-        (PrimarySecondary y (Position y2))
+        (PrimarySecondary x x2)
+        (PrimarySecondary y y2)
         Fill.empty
         Stroke.empty
         CursorDefault
@@ -374,8 +428,8 @@ type alias Rule =
 rule : Float -> Float -> Float -> Float -> Rule
 rule x x2 y y2 =
     Rule
-        (PrimarySecondary x (Position x2))
-        (PrimarySecondary y (Position y2))
+        (PrimarySecondary x x2)
+        (PrimarySecondary y y2)
         Stroke.empty
         CursorDefault
         Nothing
@@ -393,8 +447,8 @@ type alias Symbol =
     { shape : Shape
     , size : Float
     , angle : Float
-    , x : Position
-    , y : Position
+    , x : Float
+    , y : Float
     , fill : Fill
     , stroke : Stroke
     , cursor : Cursor
@@ -407,7 +461,7 @@ type alias Symbol =
 {-| -}
 symbol : Float -> Float -> Float -> Shape -> Symbol
 symbol x y size shape =
-    Symbol shape size 0 (Primary x) (Primary y) Fill.empty Stroke.empty CursorDefault Nothing Nothing 0
+    Symbol shape size 0 x y Fill.empty Stroke.empty CursorDefault Nothing Nothing 0
 
 
 {-| -}
@@ -434,8 +488,8 @@ type alias Text =
     , angle : Float
     , radius : Float
     , theta : Float
-    , x : Position
-    , y : Position
+    , x : Float
+    , y : Float
     , fill : Fill
     , stroke : Stroke
     , cursor : Cursor
@@ -483,8 +537,8 @@ text x y text =
         0
         0
         0
-        (Primary x)
-        (Primary y)
+        x
+        y
         Fill.empty
         Stroke.empty
         CursorDefault

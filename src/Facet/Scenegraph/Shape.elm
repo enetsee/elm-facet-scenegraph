@@ -4,7 +4,7 @@ module Facet.Scenegraph.Shape exposing (Shape(..))
 @docs Shape
 -}
 
-import Facet.Scenegraph.SVG.Path as SVG
+import Path.LowLevel exposing (SubPath)
 
 
 {-| A set of predefined shapes and custom SVG paths
@@ -18,4 +18,4 @@ type Shape
     | TriangleDown
     | TriangleRight
     | TriangleLeft
-    | Custom SVG.Path
+    | Custom SubPath

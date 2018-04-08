@@ -1,18 +1,20 @@
-module Facet.Scenegraph.Position exposing (map, Position(..), PositionOrExtent(..))
+module Facet.Scenegraph.Position
+    exposing
+        ( Position(PrimarySecondary, PrimaryExtent, SecondaryExtent, CenterExtent)
+        , map
+        )
 
 {-|
-@docs Position, PositionOrExtent
+@docs Position
 @docs map
 -}
 
 
 {-| Varying encodings of position
-    TODO: `Primary` is probably not required and `PrimarySecondary` should
-    be expanded into `PrimarySecondary` and `PrimaryExtent`
 -}
 type Position
-    = Primary Float
-    | PrimarySecondary Float PositionOrExtent
+    = PrimarySecondary Float Float
+    | PrimaryExtent Float Float
     | SecondaryExtent Float Float
     | CenterExtent Float Float
 
@@ -21,31 +23,14 @@ type Position
 map : (Float -> Float) -> Position -> Position
 map f position =
     case position of
-        Primary val ->
-            Primary <| f val
+        PrimarySecondary x x2 ->
+            PrimarySecondary (f x) (f x2)
 
-        PrimarySecondary x positionOrExtent ->
-            PrimarySecondary (f x) (mapPositionOrExtent f positionOrExtent)
+        PrimaryExtent x extent ->
+            PrimaryExtent (f x) extent
 
         SecondaryExtent x extent ->
             SecondaryExtent (f x) extent
 
         CenterExtent x extent ->
             CenterExtent (f x) extent
-
-
-{-| A position or an extent
--}
-type PositionOrExtent
-    = Position Float
-    | Extent Float
-
-
-mapPositionOrExtent : (Float -> Float) -> PositionOrExtent -> PositionOrExtent
-mapPositionOrExtent f positionOrExtent =
-    case positionOrExtent of
-        Position x ->
-            Position <| f x
-
-        _ ->
-            positionOrExtent
