@@ -18,4 +18,5 @@ type Shape
     | TriangleDown
     | TriangleRight
     | TriangleLeft
+    | Arrow
     | Custom SubPath
