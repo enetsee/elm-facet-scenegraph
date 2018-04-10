@@ -273,6 +273,8 @@ type alias Group =
     , cornerRadius : Float
     , x : Float
     , y : Float
+    , width : Float
+    , height : Float
     , fill : Fill
     , stroke : Stroke
     , cursor : Cursor
@@ -283,9 +285,9 @@ type alias Group =
 
 
 {-| -}
-group : Float -> Float -> Bool -> Group
-group x y clip =
-    Group clip 0 x y Fill.empty Stroke.empty CursorDefault Nothing Nothing 0
+group : Float -> Float -> Float -> Float -> Bool -> Group
+group x width y height clip =
+    Group clip 0 x y width height Fill.empty Stroke.empty CursorDefault Nothing Nothing 0
 
 
 {-| -}
