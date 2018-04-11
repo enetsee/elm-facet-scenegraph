@@ -25,7 +25,7 @@ type alias Stroke =
     , strokeOpacity : Maybe Float
     , strokeWidth : Maybe Float
     , strokeCap : Maybe StrokeCap
-    , strokeDash : Maybe (List Float)
+    , strokeDash : Maybe StrokeDash
     , strokeDashOffset : Maybe Float
     , strokeJoin : Maybe StrokeJoin
     , strokeMiterLimit : Maybe Float

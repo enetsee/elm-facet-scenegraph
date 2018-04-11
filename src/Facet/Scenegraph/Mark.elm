@@ -132,7 +132,7 @@ import Facet.Scenegraph.Font as Font exposing (Font)
 import Facet.Scenegraph.Interpolate exposing (Interpolate)
 import Facet.Scenegraph.Position exposing (Position(..))
 import Facet.Scenegraph.Shape as Shape exposing (Shape)
-import Facet.Scenegraph.Stroke as Stroke exposing (Stroke)
+import Facet.Scenegraph.Stroke as Stroke exposing (Stroke, StrokeDash)
 import Path.LowLevel exposing (SubPath)
 
 
@@ -775,7 +775,7 @@ strokeOpacity opacity mark =
 
 
 {-| -}
-strokeDashArray : List Float -> StrokedMark a -> StrokedMark a
+strokeDashArray : StrokeDash -> StrokedMark a -> StrokedMark a
 strokeDashArray dashArray mark =
     let
         currentStroke =
