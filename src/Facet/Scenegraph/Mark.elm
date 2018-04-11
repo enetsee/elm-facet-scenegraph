@@ -18,6 +18,8 @@ module Facet.Scenegraph.Mark
         , line
         , Path
         , path
+        , Polygon
+        , polygon
         , Rect
         , rect
         , rectWidthHeight
@@ -95,6 +97,9 @@ module Facet.Scenegraph.Mark
 
 ## Path
 @docs Path, path
+
+## Polygon
+@docs Polygon,  polygon
 
 ## Rect
 @docs Rect , rect, rectWidthHeight
@@ -416,6 +421,43 @@ path x y path =
         path
         x
         y
+        Fill.empty
+        Stroke.empty
+        CursorDefault
+        Nothing
+        Nothing
+
+
+
+-- Polygon ---------------------------------------------------------------------
+
+
+{-| Arbitrary filled polygons defined by x and y positions and an interpolation
+    method.
+-}
+type alias Polygon =
+    { x : List (Maybe Float)
+    , y : List (Maybe Float)
+    , interpolate : Interpolate
+    , behaviour : Behaviour
+    , fill : Fill
+    , stroke : Stroke
+    , cursor : Cursor
+    , href : Maybe String
+    , tooltip : Maybe String
+    }
+
+
+{-| Create a polygon mark from x positions, y positions, interpolation method
+    and missing value behaviour.
+-}
+polygon : List Float -> List Float -> Interpolate -> Behaviour -> Polygon
+polygon xs ys interpolate behaviour =
+    Polygon
+        (List.map Just xs)
+        (List.map Just ys)
+        interpolate
+        behaviour
         Fill.empty
         Stroke.empty
         CursorDefault

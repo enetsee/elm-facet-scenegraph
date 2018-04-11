@@ -1,9 +1,9 @@
-module Facet.Scenegraph.Font exposing (Font, default, FontStyle(..), FontWeight(..), fontStyleToString, fontWeightToString)
+module Facet.Scenegraph.Font exposing (Font, default, FontStyle(..), FontWeight(..))
 
 {-|
 @docs Font,  FontWeight, FontStyle
 @docs default
-@docs fontStyleToString, fontWeightToString
+
 -}
 
 
@@ -33,25 +33,3 @@ type FontStyle
 default : Font
 default =
     Font "Helvetica" 12 WeightNormal StyleNormal
-
-
-{-| -}
-fontWeightToString : FontWeight -> String
-fontWeightToString weight =
-    case weight of
-        WeightNormal ->
-            "normal"
-
-        WeightBold ->
-            "bold"
-
-
-{-| -}
-fontStyleToString : FontStyle -> String
-fontStyleToString style =
-    case style of
-        StyleNormal ->
-            "normal"
-
-        StyleItalic ->
-            "italic"

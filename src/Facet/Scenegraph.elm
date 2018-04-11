@@ -4,7 +4,7 @@ module Facet.Scenegraph exposing (Scenegraph(..), ViewBox)
 @docs Scenegraph, ViewBox
 -}
 
-import Facet.Scenegraph.Mark exposing (Arc, Area, Group, Line, Path, Rect, Rule, Symbol, Text, Trail)
+import Facet.Scenegraph.Mark exposing (Arc, Area, Group, Line, Path, Polygon, Rect, Rule, Symbol, Text, Trail)
 
 
 {-| A data structure representing a set of visual marks
@@ -15,6 +15,7 @@ type Scenegraph
     | Group (List ( Group, List Scenegraph ))
     | Line (List Line)
     | Path (List Path)
+    | Polygon (List Polygon)
     | Rect (List Rect)
     | Rule (List Rule)
     | Symbol (List Symbol)
