@@ -10,7 +10,7 @@ module Facet.Scenegraph.Position
 -}
 
 
-{-| Varying encodings of position
+{-| Possible encodings of a primary and secondary position
 -}
 type Position
     = PrimarySecondary Float Float

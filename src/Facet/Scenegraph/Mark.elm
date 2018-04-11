@@ -20,11 +20,13 @@ module Facet.Scenegraph.Mark
         , path
         , Rect
         , rect
+        , rectWidthHeight
         , Rule
         , rule
         , Symbol
         , symbol
         , shape
+        , size
         , Text
         , Direction(..)
         , Baseline(..)
@@ -53,17 +55,15 @@ module Facet.Scenegraph.Mark
         , strokeColor
         , strokeWidth
         , strokeOpacity
-        , strokeDashArray
-        , strokeDashOffset
-        , strokeCap
-        , strokeCapButt
-        , strokeCapRound
-        , strokeCapSquare
-        , strokeJoin
-        , strokeJoinMiter
-        , strokeJoinRound
-        , strokeJoinBevel
-        , strokeMiterLimit
+        , strokeDash
+        , strokeLineCap
+        , strokeLineCapButt
+        , strokeLineCapRound
+        , strokeLineCapSquare
+        , strokeLineJoin
+        , strokeLineJoinMiter
+        , strokeLineJoinRound
+        , strokeLineJoinBevel
         , angle
         , cornerRadius
         , LineLike
@@ -73,7 +73,6 @@ module Facet.Scenegraph.Mark
         , Mark
         , href
         , tooltip
-        , zIndex
         )
 
 {-|
@@ -88,41 +87,41 @@ module Facet.Scenegraph.Mark
 ## Group
 @docs Group, group, clip
 
-##Line
+## Line
 @docs Line, line
 
-##Line-like
+## Line-like
 @docs Behaviour, LineLike, interpolate, behaviour
 
-##Path
+## Path
 @docs Path, path
 
-##Rect
-@docs Rect , rect
+## Rect
+@docs Rect , rect, rectWidthHeight
 
-##Rule
+## Rule
 @docs Rule, rule
 
-##Symbol
-@docs Symbol, symbol, shape
+## Symbol
+@docs Symbol, symbol, shape, size
 
-##Text
+## Text
 @docs Text, Direction, Align, Baseline, text, relativePosition, align, baseline, direction, font , fontName , fontWeight, fontWeightBold, fontWeightNormal, fontStyle, fontStyleItalic, fontStyleNormal
 
-##Trail
+## Trail
 @docs Trail , trail
 
-##Fill
+## Fill
 @docs FilledMark, fill, fillColor, fillOpacity
 
-##Stroke
-@docs StrokedMark, stroke, strokeColor, strokeWidth, strokeOpacity, strokeDashArray, strokeDashOffset, strokeCap, strokeCapButt, strokeCapRound, strokeCapSquare, strokeJoin, strokeJoinBevel, strokeJoinMiter, strokeJoinRound, strokeMiterLimit
+## Stroke
+@docs StrokedMark, stroke, strokeColor, strokeWidth, strokeOpacity, strokeDash, strokeLineCap, strokeLineCapButt, strokeLineCapRound, strokeLineCapSquare, strokeLineJoin, strokeLineJoinBevel, strokeLineJoinMiter, strokeLineJoinRound
 
-##Miscellaneous
+## Miscellaneous
 @docs angle, cornerRadius
 
-##General
-@docs Mark, href, tooltip, zIndex
+## General
+@docs Mark, href, tooltip
 -}
 
 import Color exposing (Color)
@@ -136,7 +135,6 @@ import Facet.Scenegraph.Stroke as Stroke exposing (Stroke, StrokeDash)
 import Path.LowLevel exposing (SubPath)
 
 
--- import Facet.Scenegraph.SVG.Path as SVG
 -- Arcs ------------------------------------------------------------------------
 
 
@@ -156,41 +154,60 @@ type alias Arc =
     , cursor : Cursor
     , href : Maybe String
     , tooltip : Maybe String
-    , zIndex : Int
     }
 
 
-{-| -}
+{-| Create an `Arc` mark from x position, y position, start angle
+    and end angle.
+-}
 arc : Float -> Float -> Float -> Float -> Arc
 arc x y startAngle endAngle =
-    Arc startAngle endAngle 0 0 0 0 x y Fill.empty Stroke.empty CursorDefault Nothing Nothing 0
+    Arc
+        startAngle
+        endAngle
+        0
+        0
+        0
+        0
+        x
+        y
+        Fill.empty
+        Stroke.empty
+        CursorDefault
+        Nothing
+        Nothing
 
 
-{-| -}
+{-| Set the start angle of an `Arc` mark.
+-}
 startAngle : Float -> Arc -> Arc
 startAngle angle arc =
     { arc | startAngle = angle }
 
 
-{-| -}
+{-| Set the end angle of an `Arc` mark.
+-}
 endAngle : Float -> Arc -> Arc
 endAngle angle arc =
     { arc | endAngle = angle }
 
 
-{-| -}
+{-| Set the pad angle of an `Arc` mark.
+-}
 padAngle : Float -> Arc -> Arc
 padAngle angle arc =
     { arc | padAngle = angle }
 
 
-{-| -}
+{-| Set the inner radius of an `Arc` mark.
+-}
 innerRadius : Float -> Arc -> Arc
 innerRadius radius arc =
     { arc | innerRadius = radius }
 
 
-{-| -}
+{-| Set the outer radius of an `Arc` mark.
+-}
 outerRadius : Float -> Arc -> Arc
 outerRadius radius arc =
     { arc | outerRadius = radius }
@@ -200,37 +217,41 @@ outerRadius radius arc =
 -- Area ------------------------------------------------------------------------
 
 
-{-| What to when a point is not defined
+{-| The rendering behaviour when a missing value is encountered:
+    - `SkipMissing` will ignore the missing value and continue with the current path;
+    - `BeginNew` will begin a new path.
 -}
 type Behaviour
     = SkipMissing
-    | Split
+    | BeginNew
 
 
-{-| -}
+{-| Orient the area mark vertically or horizontally.
+-}
 type Orientation
     = Vertical
     | Horizontal
 
 
-{-| Filled area with either vertical or horizontal orientation
+{-| Filled area with either vertical or horizontal orientation.
 -}
 type alias Area =
     { x : List (Maybe Float)
     , y : List (Maybe Position)
     , interpolate : Interpolate
     , behaviour : Behaviour
-    , alignment : Orientation
+    , orientation : Orientation
     , fill : Fill
     , stroke : Stroke
     , cursor : Cursor
     , href : Maybe String
     , tooltip : Maybe String
-    , zIndex : Int
     }
 
 
-{-| -}
+{-| Create a horitontally oriented area mark from x positions, upper and lower
+    y positions, interpolation method and missing value behaviour.
+-}
 hArea : List Float -> List Float -> List Float -> Interpolate -> Behaviour -> Area
 hArea xs ys ys2 interpolate behaviour =
     Area (List.map Just xs)
@@ -243,14 +264,15 @@ hArea xs ys ys2 interpolate behaviour =
         CursorDefault
         Nothing
         Nothing
-        0
 
 
-{-| -}
+{-| Create a vertically oriented area mark from y positions, upper and lower
+    x positions, interpolation method and missing value behaviour.
+-}
 vArea : List Float -> List Float -> List Float -> Interpolate -> Behaviour -> Area
-vArea xs ys ys2 interpolate behaviour =
-    Area (List.map Just xs)
-        (List.map2 (\x x2 -> PrimarySecondary x x2 |> Just) ys ys2)
+vArea ys xs xs2 interpolate behaviour =
+    Area (List.map Just ys)
+        (List.map2 (\x x2 -> PrimarySecondary x x2 |> Just) xs xs2)
         interpolate
         behaviour
         Vertical
@@ -259,14 +281,13 @@ vArea xs ys ys2 interpolate behaviour =
         CursorDefault
         Nothing
         Nothing
-        0
 
 
 
 -- Group -----------------------------------------------------------------------
 
 
-{-| Container for other marks
+{-| Container for other marks.
 -}
 type alias Group =
     { clip : Bool
@@ -280,17 +301,32 @@ type alias Group =
     , cursor : Cursor
     , href : Maybe String
     , tooltip : Maybe String
-    , zIndex : Int
     }
 
 
-{-| -}
+{-| Create a `Group` mark from x position, width, y position, height and
+    clip flag.
+-}
 group : Float -> Float -> Float -> Float -> Bool -> Group
 group x width y height clip =
-    Group clip 0 x y width height Fill.empty Stroke.empty CursorDefault Nothing Nothing 0
+    Group
+        clip
+        0
+        x
+        y
+        width
+        height
+        Fill.empty
+        Stroke.empty
+        CursorDefault
+        Nothing
+        Nothing
 
 
-{-| -}
+{-| Set the clip flag of a `Rect` mark. Setting this to true will create a
+    rectangular clip path (with position and dimensions determined by those
+    defined for the mark) and apply to all contained marks.
+-}
 clip : Bool -> Group -> Group
 clip clip group =
     { group | clip = clip }
@@ -300,7 +336,7 @@ clip clip group =
 -- Line ------------------------------------------------------------------------
 
 
-{-| Stroked lines
+{-| Stroked lines.
 -}
 type alias Line =
     { x : List (Maybe Float)
@@ -311,11 +347,12 @@ type alias Line =
     , cursor : Cursor
     , href : Maybe String
     , tooltip : Maybe String
-    , zIndex : Int
     }
 
 
-{-| -}
+{-| Create a `Line` mark from x positions, y positions, interpolation method
+    and missing value behaviour.
+-}
 line : List Float -> List Float -> Interpolate -> Behaviour -> Line
 line xs ys interpolate behaviour =
     Line
@@ -327,25 +364,27 @@ line xs ys interpolate behaviour =
         CursorDefault
         Nothing
         Nothing
-        0
 
 
 
 -- Line-like -------------------------------------------------------------------
 
 
-{-| -}
+{-| Type alias for marks with interpolation and missing value behaviour.
+-}
 type alias LineLike a =
     { a | interpolate : Interpolate, behaviour : Behaviour }
 
 
-{-| -}
+{-| Set the interpolation method.
+-}
 interpolate : Interpolate -> LineLike a -> LineLike a
 interpolate method mark =
     { mark | interpolate = method }
 
 
-{-| -}
+{-| Set the `Behaviour` for missing values.
+-}
 behaviour : Behaviour -> LineLike a -> LineLike a
 behaviour behaviour mark =
     { mark | behaviour = behaviour }
@@ -355,7 +394,7 @@ behaviour behaviour mark =
 -- Path ------------------------------------------------------------------------
 
 
-{-| Arbitrary paths or polygons, defined using SVG path syntax
+{-| Arbitrary paths or polygons, defined using SVG path syntax.
 -}
 type alias Path =
     { path : SubPath
@@ -366,21 +405,29 @@ type alias Path =
     , cursor : Cursor
     , href : Maybe String
     , tooltip : Maybe String
-    , zIndex : Int
     }
 
 
-{-| -}
+{-| Create a `Path` mark from x position, y position and SVG path definition.
+-}
 path : Float -> Float -> SubPath -> Path
 path x y path =
-    Path path x y Fill.empty Stroke.empty CursorDefault Nothing Nothing 0
+    Path
+        path
+        x
+        y
+        Fill.empty
+        Stroke.empty
+        CursorDefault
+        Nothing
+        Nothing
 
 
 
 -- Rect ------------------------------------------------------------------------
 
 
-{-| Rectangles
+{-| Rectangles.
 -}
 type alias Rect =
     { cornerRadius : Float
@@ -391,11 +438,12 @@ type alias Rect =
     , cursor : Cursor
     , href : Maybe String
     , tooltip : Maybe String
-    , zIndex : Int
     }
 
 
-{-| -}
+{-| Create a `Rect` mark from primary x position, secondary x position,
+    primary y position and secondary x position.
+-}
 rect : Float -> Float -> Float -> Float -> Rect
 rect x x2 y y2 =
     Rect 0
@@ -406,14 +454,28 @@ rect x x2 y y2 =
         CursorDefault
         Nothing
         Nothing
-        0
+
+
+{-| Create a `Rect` mark from primary x position, width,
+    primary y position and height.
+-}
+rectWidthHeight : Float -> Float -> Float -> Float -> Rect
+rectWidthHeight x width y height =
+    Rect 0
+        (PrimaryExtent x width)
+        (PrimaryExtent y height)
+        Fill.empty
+        Stroke.empty
+        CursorDefault
+        Nothing
+        Nothing
 
 
 
 -- Rule ------------------------------------------------------------------------
 
 
-{-| Line segments
+{-| Line segments.
 -}
 type alias Rule =
     { x : Position
@@ -422,11 +484,12 @@ type alias Rule =
     , cursor : Cursor
     , href : Maybe String
     , tooltip : Maybe String
-    , zIndex : Int
     }
 
 
-{-| -}
+{-| Create a `Rule` mark rom primary x position, secondary x position,
+    primary y position and secondary x position.
+-}
 rule : Float -> Float -> Float -> Float -> Rule
 rule x x2 y y2 =
     Rule
@@ -436,14 +499,13 @@ rule x x2 y y2 =
         CursorDefault
         Nothing
         Nothing
-        0
 
 
 
 -- Symbol ----------------------------------------------------------------------
 
 
-{-| Plotting symbols, including circles, squares and other shapes
+{-| Plotting symbols, including circles, squares and other shapes.
 -}
 type alias Symbol =
     { shape : Shape
@@ -456,27 +518,45 @@ type alias Symbol =
     , cursor : Cursor
     , href : Maybe String
     , tooltip : Maybe String
-    , zIndex : Int
     }
 
 
-{-| -}
+{-| Create a `Symbol` mark from x position, y position, size and `Shape`.
+-}
 symbol : Float -> Float -> Float -> Shape -> Symbol
 symbol x y size shape =
-    Symbol shape size 0 x y Fill.empty Stroke.empty CursorDefault Nothing Nothing 0
+    Symbol
+        shape
+        size
+        0
+        x
+        y
+        Fill.empty
+        Stroke.empty
+        CursorDefault
+        Nothing
+        Nothing
 
 
-{-| -}
+{-| Set the `Shape` of the `Symbol` mark.
+-}
 shape : Shape -> Symbol -> Symbol
 shape shape symbol =
     { symbol | shape = shape }
+
+
+{-| Set the size of the `Symbol` mark.
+-}
+size : Float -> Symbol -> Symbol
+size size symbol =
+    { symbol | size = size }
 
 
 
 -- Text ------------------------------------------------------------------------
 
 
-{-| Text labels with configurable fonts, alignment and angle
+{-| Text labels with configurable fonts, alignment and angle.
 -}
 type alias Text =
     { text : String
@@ -497,11 +577,10 @@ type alias Text =
     , cursor : Cursor
     , href : Maybe String
     , tooltip : Maybe String
-    , zIndex : Int
     }
 
 
-{-| Horizontal alignment
+{-| Horizontal alignment.
 -}
 type Align
     = Left
@@ -509,7 +588,7 @@ type Align
     | Right
 
 
-{-| Vertical alignment
+{-| Vertical alignment.
 -}
 type Baseline
     = Top
@@ -518,14 +597,15 @@ type Baseline
     | Alphabetic
 
 
-{-| Flow direction
+{-| Flow direction.
 -}
 type Direction
     = LeftToRight
     | RightToLeft
 
 
-{-| -}
+{-| Create a `Text` mark from x position, y position and the text to display.
+-}
 text : Float -> Float -> String -> Text
 text x y text =
     Text text
@@ -546,40 +626,45 @@ text x y text =
         CursorDefault
         Nothing
         Nothing
-        0
 
 
-{-| -}
+{-| Set the relative x and y position of a `Text` mark in `em` units.
+-}
 relativePosition : Float -> Float -> Text -> Text
 relativePosition dx dy text =
     { text | dx = dx, dy = dy }
 
 
-{-| -}
+{-| Set the horizontal alignment of a `Text` mark.
+-}
 align : Align -> Text -> Text
 align align text =
     { text | align = align }
 
 
-{-| -}
+{-| Set the vertical alignment of a `Text` mark.
+-}
 baseline : Baseline -> Text -> Text
 baseline baseline text =
     { text | baseline = baseline }
 
 
-{-| -}
+{-| Set the flow direction of a `Text` mark.
+-}
 direction : Direction -> Text -> Text
 direction direction text =
     { text | direction = direction }
 
 
-{-| -}
+{-| Set the `Font` style of a `Text` mark.
+-}
 font : Font -> Text -> Text
 font font text =
     { text | font = font }
 
 
-{-| -}
+{-| Set the font name of a `Text` mark.
+-}
 fontName : String -> Text -> Text
 fontName name mark =
     let
@@ -592,7 +677,8 @@ fontName name mark =
         font newFont mark
 
 
-{-| -}
+{-| Set the font size of a `Text` mark.
+-}
 fontSize : Float -> Text -> Text
 fontSize size mark =
     let
@@ -605,7 +691,8 @@ fontSize size mark =
         font newFont mark
 
 
-{-| -}
+{-| Set the `FontWeight` of a `Text` mark.
+-}
 fontWeight : Font.FontWeight -> Text -> Text
 fontWeight weight mark =
     let
@@ -618,19 +705,22 @@ fontWeight weight mark =
         font newFont mark
 
 
-{-| -}
+{-| Set the `FontWeight` of a `Text` mark to *bold*.
+-}
 fontWeightBold : Text -> Text
 fontWeightBold =
     fontWeight Font.WeightBold
 
 
-{-| -}
+{-| Set the `FontWeight` of a `Text` mark to normal.
+-}
 fontWeightNormal : Text -> Text
 fontWeightNormal =
     fontWeight Font.WeightNormal
 
 
-{-| -}
+{-| Set the `FontStyle` of a `Text` mark.
+-}
 fontStyle : Font.FontStyle -> Text -> Text
 fontStyle style mark =
     let
@@ -643,13 +733,15 @@ fontStyle style mark =
         font newFont mark
 
 
-{-| -}
+{-| Set the `FontStyle` of a `Text` mark to _italic_.
+-}
 fontStyleItalic : Text -> Text
 fontStyleItalic =
     fontStyle Font.StyleItalic
 
 
-{-| -}
+{-| Set the `FontStyle` of a `Text` mark to normal.
+-}
 fontStyleNormal : Text -> Text
 fontStyleNormal =
     fontStyle Font.StyleNormal
@@ -659,7 +751,7 @@ fontStyleNormal =
 -- Trail -----------------------------------------------------------------------
 
 
-{-| Filled lines with varying width
+{-| Filled lines with varying width.
 -}
 type alias Trail =
     { x : List Float
@@ -669,32 +761,35 @@ type alias Trail =
     , cursor : Cursor
     , href : Maybe String
     , tooltip : Maybe String
-    , zIndex : Int
     }
 
 
-{-| -}
+{-| Create a `Trail` mark from x positions, y positions and widths.
+-}
 trail : List Float -> List Float -> List Float -> Trail
 trail xs ys widths =
-    Trail xs ys widths Fill.empty CursorDefault Nothing Nothing 0
+    Trail xs ys widths Fill.empty CursorDefault Nothing Nothing
 
 
 
 -- Fill ------------------------------------------------------------------------
 
 
-{-| -}
+{-| A mark which can be filled.
+-}
 type alias FilledMark a =
     { a | fill : Fill }
 
 
-{-| -}
+{-| Set the `Fill` style of the mark.
+-}
 fill : Fill -> FilledMark a -> FilledMark a
 fill fill mark =
     { mark | fill = fill }
 
 
-{-| -}
+{-| Set the fill color of the mark.
+-}
 fillColor : Color -> FilledMark a -> FilledMark a
 fillColor color mark =
     let
@@ -707,7 +802,8 @@ fillColor color mark =
         fill newFill mark
 
 
-{-| -}
+{-| Set the fill opacity of the mark.
+-}
 fillOpacity : Float -> FilledMark a -> FilledMark a
 fillOpacity opacity mark =
     let
@@ -724,18 +820,21 @@ fillOpacity opacity mark =
 -- Stroke  ---------------------------------------------------------------------
 
 
-{-| -}
+{-| A mark which can be stroked.
+-}
 type alias StrokedMark a =
     { a | stroke : Stroke }
 
 
-{-| -}
+{-| Set the `Stroke` style of the mark.
+-}
 stroke : Stroke -> StrokedMark a -> StrokedMark a
 stroke stroke mark =
     { mark | stroke = stroke }
 
 
-{-| -}
+{-| Set the stroke color of the mark.
+-}
 strokeColor : Color -> StrokedMark a -> StrokedMark a
 strokeColor color mark =
     let
@@ -748,7 +847,8 @@ strokeColor color mark =
         stroke newStroke mark
 
 
-{-| -}
+{-| Set the stroke width of the mark.
+-}
 strokeWidth : Float -> StrokedMark a -> StrokedMark a
 strokeWidth width mark =
     let
@@ -761,7 +861,8 @@ strokeWidth width mark =
         stroke newStroke mark
 
 
-{-| -}
+{-| Set the stroke opacity of the mark.
+-}
 strokeOpacity : Float -> StrokedMark a -> StrokedMark a
 strokeOpacity opacity mark =
     let
@@ -774,118 +875,104 @@ strokeOpacity opacity mark =
         stroke newStroke mark
 
 
-{-| -}
-strokeDashArray : StrokeDash -> StrokedMark a -> StrokedMark a
-strokeDashArray dashArray mark =
+{-| Set the `StrokeDash` of the mark.
+-}
+strokeDash : StrokeDash -> StrokedMark a -> StrokedMark a
+strokeDash dash mark =
     let
         currentStroke =
             mark.stroke
 
         newStroke =
-            { currentStroke | strokeDash = Just dashArray }
+            { currentStroke | strokeDash = Just dash }
     in
         stroke newStroke mark
 
 
-{-| -}
-strokeDashOffset : Float -> StrokedMark a -> StrokedMark a
-strokeDashOffset offset mark =
+{-| Set the `StrokeLineCap` of the mark.
+-}
+strokeLineCap : Stroke.StrokeLineCap -> StrokedMark a -> StrokedMark a
+strokeLineCap cap mark =
     let
         currentStroke =
             mark.stroke
 
         newStroke =
-            { currentStroke | strokeDashOffset = Just offset }
+            { currentStroke | strokeLineCap = Just cap }
     in
         stroke newStroke mark
 
 
-{-| -}
-strokeCap : Stroke.StrokeCap -> StrokedMark a -> StrokedMark a
-strokeCap cap mark =
+{-| Set the `StrokeLineCap` of the mark to `CapButt`.
+-}
+strokeLineCapButt : StrokedMark a -> StrokedMark a
+strokeLineCapButt =
+    strokeLineCap Stroke.CapButt
+
+
+{-| Set the `StrokeLineCap` of the mark to `CapRound`.
+-}
+strokeLineCapRound : StrokedMark a -> StrokedMark a
+strokeLineCapRound =
+    strokeLineCap Stroke.CapRound
+
+
+{-| Set the `StrokeLineCap` of the mark to `CapSquare`.
+-}
+strokeLineCapSquare : StrokedMark a -> StrokedMark a
+strokeLineCapSquare =
+    strokeLineCap Stroke.CapSquare
+
+
+{-| Set the `StrokeLineJoin` of the mark.
+-}
+strokeLineJoin : Stroke.StrokeLineJoin -> StrokedMark a -> StrokedMark a
+strokeLineJoin join mark =
     let
         currentStroke =
             mark.stroke
 
         newStroke =
-            { currentStroke | strokeCap = Just cap }
+            { currentStroke | strokeLineJoin = Just join }
     in
         stroke newStroke mark
 
 
-{-| -}
-strokeCapButt : StrokedMark a -> StrokedMark a
-strokeCapButt =
-    strokeCap Stroke.CapButt
+{-| Set the `StrokeLineJoin` of the mark to `JoinMiter`
+    providing the  miter limit as an arugment.
+-}
+strokeLineJoinMiter : Float -> StrokedMark a -> StrokedMark a
+strokeLineJoinMiter miterLimit =
+    strokeLineJoin <| Stroke.JoinMiter miterLimit
 
 
-{-| -}
-strokeCapRound : StrokedMark a -> StrokedMark a
-strokeCapRound =
-    strokeCap Stroke.CapRound
+{-| Set the `StrokeLineJoin` of the mark to `JoinRound`
+-}
+strokeLineJoinRound : StrokedMark a -> StrokedMark a
+strokeLineJoinRound =
+    strokeLineJoin Stroke.JoinRound
 
 
-{-| -}
-strokeCapSquare : StrokedMark a -> StrokedMark a
-strokeCapSquare =
-    strokeCap Stroke.CapSquare
-
-
-{-| -}
-strokeJoin : Stroke.StrokeJoin -> StrokedMark a -> StrokedMark a
-strokeJoin join mark =
-    let
-        currentStroke =
-            mark.stroke
-
-        newStroke =
-            { currentStroke | strokeJoin = Just join }
-    in
-        stroke newStroke mark
-
-
-{-| -}
-strokeJoinMiter : StrokedMark a -> StrokedMark a
-strokeJoinMiter =
-    strokeJoin Stroke.JoinMiter
-
-
-{-| -}
-strokeJoinRound : StrokedMark a -> StrokedMark a
-strokeJoinRound =
-    strokeJoin Stroke.JoinRound
-
-
-{-| -}
-strokeJoinBevel : StrokedMark a -> StrokedMark a
-strokeJoinBevel =
-    strokeJoin Stroke.JoinBevel
-
-
-{-| -}
-strokeMiterLimit : Float -> StrokedMark a -> StrokedMark a
-strokeMiterLimit limit mark =
-    let
-        currentStroke =
-            mark.stroke
-
-        newStroke =
-            { currentStroke | strokeMiterLimit = Just limit }
-    in
-        stroke newStroke mark
+{-| Set the `StrokeLineJoin` of the mark to `JoinBevel`
+-}
+strokeLineJoinBevel : StrokedMark a -> StrokedMark a
+strokeLineJoinBevel =
+    strokeLineJoin Stroke.JoinBevel
 
 
 
 -- Miscellaneous ---------------------------------------------------------------
 
 
-{-| -}
+{-| Set the angle of rotation (in degrees) of a mark.
+-}
 angle : Float -> { c | angle : Float } -> { c | angle : Float }
 angle angle mark =
     { mark | angle = angle }
 
 
-{-| -}
+{-| Set the corner radius of a mark.
+-}
 cornerRadius : Float -> { c | cornerRadius : Float } -> { c | cornerRadius : Float }
 cornerRadius radius mark =
     { mark | cornerRadius = radius }
@@ -895,24 +982,21 @@ cornerRadius radius mark =
 -- Common ----------------------------------------------------------------------
 
 
-{-| -}
+{-| Properties supported by all marks.
+-}
 type alias Mark a =
-    { a | href : Maybe String, tooltip : Maybe String, zIndex : Int }
+    { a | href : Maybe String, tooltip : Maybe String }
 
 
-{-| -}
+{-| Set URL to open when a mark is clicked.
+-}
 href : String -> Mark a -> Mark a
 href href mark =
     { mark | href = Just href }
 
 
-{-| -}
+{-| Set the text to display when a mark is hovered over.
+-}
 tooltip : String -> Mark a -> Mark a
 tooltip text mark =
     { mark | tooltip = Just text }
-
-
-{-| -}
-zIndex : Int -> Mark a -> Mark a
-zIndex z mark =
-    { mark | zIndex = z }

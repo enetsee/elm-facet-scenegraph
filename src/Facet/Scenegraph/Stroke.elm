@@ -2,17 +2,16 @@ module Facet.Scenegraph.Stroke
     exposing
         ( Stroke
         , StrokeDash(..)
-        , StrokeCap(..)
-        , StrokeJoin(..)
+        , StrokeLineCap(..)
+        , StrokeLineJoin(..)
         , empty
-        , strokeDashToString
-        , strokeCapToString
-        , strokeJoinToString
+        , strokeDashArray
+        , strokeDashOffset
         )
 
 {-|
-@docs Stroke, StrokeDash, StrokeCap, StrokeJoin,empty
-@docs strokeCapToString, strokeJoinToString, strokeDashToString
+@docs Stroke, StrokeDash, StrokeLineCap, StrokeLineJoin, empty
+@docs strokeDashArray , strokeDashOffset
 -}
 
 import Color exposing (Color)
@@ -24,40 +23,121 @@ type alias Stroke =
     { stroke : Maybe Color
     , strokeOpacity : Maybe Float
     , strokeWidth : Maybe Float
-    , strokeCap : Maybe StrokeCap
+    , strokeLineCap : Maybe StrokeLineCap
     , strokeDash : Maybe StrokeDash
-    , strokeDashOffset : Maybe Float
-    , strokeJoin : Maybe StrokeJoin
-    , strokeMiterLimit : Maybe Float
+    , strokeLineJoin : Maybe StrokeLineJoin
     }
 
 
-{-|
+{-| A set of stroke dash arrays. `StrokeDash1` through `StrokeDash10` correspond
+    to these [examples](https://developer.mozilla.org/en-US/docs/Web/SVG/Attribute/stroke-dasharray).
+    You may specify a custom stroke dash array using `StrokeDashCustom`.
+    The first argument to each constructor is the offset
 -}
 type StrokeDash
-    = StrokeDash1
-    | StrokeDash2
-    | StrokeDash3
-    | StrokeDash4
-    | StrokeDash5
-    | StrokeDash6
-    | StrokeDash7
-    | StrokeDash8
-    | StrokeDash9
-    | StrokeDash10
-    | StrokeDashCustom (List Float)
+    = StrokeDash1 (Maybe Float)
+    | StrokeDash2 (Maybe Float)
+    | StrokeDash3 (Maybe Float)
+    | StrokeDash4 (Maybe Float)
+    | StrokeDash5 (Maybe Float)
+    | StrokeDash6 (Maybe Float)
+    | StrokeDash7 (Maybe Float)
+    | StrokeDash8 (Maybe Float)
+    | StrokeDash9 (Maybe Float)
+    | StrokeDash10 (Maybe Float)
+    | StrokeDashCustom (List Float) (Maybe Float)
 
 
-{-| -}
-type StrokeCap
+{-| Extract the stroke dash array from a `StrokeDash`
+-}
+strokeDashArray : StrokeDash -> List Float
+strokeDashArray strokeDash =
+    case strokeDash of
+        StrokeDash1 _ ->
+            [ 5, 5 ]
+
+        StrokeDash2 _ ->
+            [ 5, 10 ]
+
+        StrokeDash3 _ ->
+            [ 10, 5 ]
+
+        StrokeDash4 _ ->
+            [ 5, 1 ]
+
+        StrokeDash5 _ ->
+            [ 1, 5 ]
+
+        StrokeDash6 _ ->
+            [ 0.9 ]
+
+        StrokeDash7 _ ->
+            [ 15, 10, 5 ]
+
+        StrokeDash8 _ ->
+            [ 15, 10, 5, 10 ]
+
+        StrokeDash9 _ ->
+            [ 15, 10, 5, 10, 15 ]
+
+        StrokeDash10 _ ->
+            [ 5, 5, 1, 5 ]
+
+        StrokeDashCustom xs _ ->
+            xs
+
+
+{-| Extract the stroke dash offset (if any) from a `StrokeDash`
+-}
+strokeDashOffset : StrokeDash -> Maybe Float
+strokeDashOffset strokeDash =
+    case strokeDash of
+        StrokeDash1 maybeOffset ->
+            maybeOffset
+
+        StrokeDash2 maybeOffset ->
+            maybeOffset
+
+        StrokeDash3 maybeOffset ->
+            maybeOffset
+
+        StrokeDash4 maybeOffset ->
+            maybeOffset
+
+        StrokeDash5 maybeOffset ->
+            maybeOffset
+
+        StrokeDash6 maybeOffset ->
+            maybeOffset
+
+        StrokeDash7 maybeOffset ->
+            maybeOffset
+
+        StrokeDash8 maybeOffset ->
+            maybeOffset
+
+        StrokeDash9 maybeOffset ->
+            maybeOffset
+
+        StrokeDash10 maybeOffset ->
+            maybeOffset
+
+        StrokeDashCustom _ maybeOffset ->
+            maybeOffset
+
+
+{-| Specify the shape to be used at the end of open subpaths when they are stroked.
+-}
+type StrokeLineCap
     = CapButt
     | CapRound
     | CapSquare
 
 
-{-| -}
-type StrokeJoin
-    = JoinMiter
+{-| Specify the shape to be used at the corners of paths or basic shapes when they are stroked.
+-}
+type StrokeLineJoin
+    = JoinMiter Float
     | JoinRound
     | JoinBevel
 
@@ -69,80 +149,7 @@ empty =
     { stroke = Nothing
     , strokeOpacity = Nothing
     , strokeWidth = Nothing
-    , strokeCap = Nothing
+    , strokeLineCap = Nothing
     , strokeDash = Nothing
-    , strokeDashOffset = Nothing
-    , strokeJoin = Nothing
-    , strokeMiterLimit = Nothing
+    , strokeLineJoin = Nothing
     }
-
-
-{-| -}
-strokeCapToString : StrokeCap -> String
-strokeCapToString strokeCap =
-    case strokeCap of
-        CapButt ->
-            "butt"
-
-        CapRound ->
-            "round"
-
-        CapSquare ->
-            "square"
-
-
-{-| -}
-strokeJoinToString : StrokeJoin -> String
-strokeJoinToString strokeJoin =
-    case strokeJoin of
-        JoinMiter ->
-            "miter"
-
-        JoinRound ->
-            "round"
-
-        JoinBevel ->
-            "bevel"
-
-
-{-| -}
-strokeDashToString : StrokeDash -> String
-strokeDashToString strokeDash =
-    case strokeDash of
-        StrokeDash1 ->
-            "5, 5"
-
-        StrokeDash2 ->
-            "5, 10"
-
-        StrokeDash3 ->
-            "10, 5"
-
-        StrokeDash4 ->
-            "5, 1"
-
-        StrokeDash5 ->
-            "1, 5"
-
-        StrokeDash6 ->
-            "0.9"
-
-        StrokeDash7 ->
-            "15, 10, 5"
-
-        StrokeDash8 ->
-            "15, 10, 5, 10"
-
-        StrokeDash9 ->
-            "15, 10, 5, 10, 15"
-
-        StrokeDash10 ->
-            "5, 5, 1, 5"
-
-        StrokeDashCustom xs ->
-            case xs of
-                [] ->
-                    "none"
-
-                _ ->
-                    xs |> List.map toString |> String.join ", "

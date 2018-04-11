@@ -7,7 +7,8 @@ module Facet.Scenegraph.Fill exposing (Fill, empty)
 import Color exposing (Color)
 
 
-{-| -}
+{-| Fill styling
+-}
 type alias Fill =
     { fill : Maybe Color
     , fillOpacity : Maybe Float
