@@ -1,16 +1,17 @@
 module Facet.Scenegraph.Stroke
     exposing
         ( Stroke
+        , StrokeDash(..)
         , StrokeCap(..)
         , StrokeJoin(..)
         , empty
+        , strokeDashToString
         , strokeCapToString
         , strokeJoinToString
-        , strokeDashToString
         )
 
 {-|
-@docs Stroke, StrokeCap, StrokeJoin,empty
+@docs Stroke, StrokeDash, StrokeCap, StrokeJoin,empty
 @docs strokeCapToString, strokeJoinToString, strokeDashToString
 -}
 
@@ -29,6 +30,22 @@ type alias Stroke =
     , strokeJoin : Maybe StrokeJoin
     , strokeMiterLimit : Maybe Float
     }
+
+
+{-|
+-}
+type StrokeDash
+    = StrokeDash1
+    | StrokeDash2
+    | StrokeDash3
+    | StrokeDash4
+    | StrokeDash5
+    | StrokeDash6
+    | StrokeDash7
+    | StrokeDash8
+    | StrokeDash9
+    | StrokeDash10
+    | StrokeDashCustom (List Float)
 
 
 {-| -}
@@ -89,6 +106,43 @@ strokeJoinToString strokeJoin =
 
 
 {-| -}
-strokeDashToString : List a -> String
+strokeDashToString : StrokeDash -> String
 strokeDashToString strokeDash =
-    strokeDash |> List.map toString |> String.join ","
+    case strokeDash of
+        StrokeDash1 ->
+            "5, 5"
+
+        StrokeDash2 ->
+            "5, 10"
+
+        StrokeDash3 ->
+            "10, 5"
+
+        StrokeDash4 ->
+            "5, 1"
+
+        StrokeDash5 ->
+            "1, 5"
+
+        StrokeDash6 ->
+            "0.9"
+
+        StrokeDash7 ->
+            "15, 10, 5"
+
+        StrokeDash8 ->
+            "15, 10, 5, 10"
+
+        StrokeDash9 ->
+            "15, 10, 5, 10, 15"
+
+        StrokeDash10 ->
+            "5, 5, 1, 5"
+
+        StrokeDashCustom xs ->
+            case xs of
+                [] ->
+                    "none"
+
+                _ ->
+                    xs |> List.map toString |> String.join ", "
