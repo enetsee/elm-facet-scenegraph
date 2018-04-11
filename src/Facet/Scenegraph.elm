@@ -7,7 +7,7 @@ module Facet.Scenegraph exposing (Scenegraph(..), ViewBox)
 import Facet.Scenegraph.Mark exposing (Arc, Area, Group, Line, Path, Polygon, Rect, Rule, Symbol, Text, Trail)
 
 
-{-| A data structure representing a set of visual marks
+{-| A data structure representing a set of visual marks.
 -}
 type Scenegraph
     = Arc (List Arc)

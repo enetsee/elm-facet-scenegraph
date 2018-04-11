@@ -796,9 +796,10 @@ fontStyleNormal =
 {-| Filled lines with varying width.
 -}
 type alias Trail =
-    { x : List Float
-    , y : List Float
-    , width : List Float
+    { x : List (Maybe Float)
+    , y : List (Maybe Float)
+    , width : List (Maybe Float)
+    , behaviour : Behaviour
     , fill : Fill
     , cursor : Cursor
     , href : Maybe String
@@ -808,9 +809,17 @@ type alias Trail =
 
 {-| Create a `Trail` mark from x positions, y positions and widths.
 -}
-trail : List Float -> List Float -> List Float -> Trail
-trail xs ys widths =
-    Trail xs ys widths Fill.empty CursorDefault Nothing Nothing
+trail : List Float -> List Float -> List Float -> Behaviour -> Trail
+trail xs ys widths behaviour =
+    Trail
+        (List.map Just xs)
+        (List.map Just ys)
+        (List.map Just widths)
+        behaviour
+        Fill.empty
+        CursorDefault
+        Nothing
+        Nothing
 
 
 
